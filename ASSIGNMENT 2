@@ -1,0 +1,124 @@
+1.  decisions with many boundaries
+
+
+units = int(input("Enter electricity units: "))
+ration = input("Do you have ration card? (yes/no): ")
+age = int(input("Enter age of oldest member: "))
+
+# Using separate if statements
+print("\nUsing Separate If Statements:")
+
+if units <= 100:
+    print("Full Subsidy")
+
+if 100 < units <= 200 and ration == "yes":
+    print("Partial Subsidy")
+
+if units > 200:
+    print("No Subsidy")
+
+if units > 200 and age > 80:
+    print("Special Subsidy for Senior Citizen")
+
+
+# Using if-elif-else
+print("\nUsing If-Elif-Else:")
+
+if units <= 100:
+    print("Full Subsidy")
+
+elif 100 < units <= 200 and ration == "yes":
+    print("Partial Subsidy")
+
+elif units > 200 and age > 80:
+    print("Special Subsidy for Senior Citizen")
+
+else:
+    print("No Subsidy")units = int(input("Enter electricity units: "))
+ration = input("Do you have ration card? (yes/no): ")
+age = int(input("Enter age of oldest member: "))
+
+# Using separate if statements
+print("\nUsing Separate If Statements:")
+
+if units <= 100:
+    print("Full Subsidy")
+
+if 100 < units <= 200 and ration == "yes":
+    print("Partial Subsidy")
+
+if units > 200:
+    print("No Subsidy")
+
+if units <= 100:
+    print("Full Subsidy")
+
+elif 100 < units <= 200 and ration == "yes":
+    print("Partial Subsidy")
+
+elif units > 200 and age > 80:
+    print("Special Subsidy for Senior Citizen")
+
+else:
+    print("No Subsidy")
+
+
+ 2.loops that count attempts 
+
+correct_otp = "1234"
+attempts = 0
+
+while attempts < 3:
+    otp = input("Enter OTP: ")
+
+    if otp == "":
+        print("Blank entry! Try again.")
+        continue
+
+    attempts += 1
+
+    if otp == correct_otp:
+        print("OTP Verified Successfully")
+        break
+
+    else:
+        print("Wrong OTP")
+
+else:
+    print("Account Locked for 30 minutes")
+
+3. changed condition - two extra attempts
+
+ correct_otp = "1234"
+security_answer = "python"
+
+attempts = 0
+max_attempts = 3
+
+while attempts < max_attempts:
+
+    otp = input("Enter OTP: ")
+
+    if otp == "":
+        print("Blank entry")
+        continue
+
+    attempts += 1
+
+    if otp == correct_otp:
+        print("Login Successful")
+        break
+
+    else:
+        print("Wrong OTP")
+
+        if attempts == 3:
+            answer = input("Answer security question: ")
+
+            if answer.lower() == security_answer:
+                max_attempts += 2
+                print("Two extra attempts granted")
+
+else:
+    print("Account Locked for 30 minutes")
+
