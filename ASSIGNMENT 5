@@ -1,0 +1,231 @@
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import logging
+import time
+
+# Logging configuration
+logging.basicConfig(
+    filename="program.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s"
+)
+
+# Read dataset
+df = pd.read_csv("air_quality.csv")
+
+print("Original Dataset:")
+print(df.head())
+
+# -------------------------------
+# TASK A2: DATA CLEANING
+# -------------------------------
+
+# Remove duplicate rows
+df = df.drop_duplicates()
+
+# Convert date column
+df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+
+# Convert numeric columns
+df["PM2.5"] = pd.to_numeric(df["PM2.5"], errors="coerce")
+df["Temperature"] = pd.to_numeric(
+    df["Temperature"], errors="coerce"
+)
+
+# Replace impossible values
+df.loc[df["PM2.5"] < 0, "PM2.5"] = np.nan
+
+# Fill missing values with median
+df["PM2.5"] = df["PM2.5"].fillna(
+    df["PM2.5"].median()
+)
+
+df["Temperature"] = df["Temperature"].fillna(
+    df["Temperature"].median()
+)
+
+print("\nCleaned Dataset:")
+print(df.head())
+
+# Min-Max Normalisation
+minimum = df["PM2.5"].min()
+maximum = df["PM2.5"].max()
+
+if maximum != minimum:
+    df["PM2.5_Normalized"] = (
+        (df["PM2.5"] - minimum) /
+        (maximum - minimum)
+    )
+else:
+    df["PM2.5_Normalized"] = 0
+
+# Z-score standardisation
+std = df["PM2.5"].std()
+
+if pd.notna(std) and std != 0:
+    df["PM2.5_Zscore"] = (
+        (df["PM2.5"] - df["PM2.5"].mean()) / std
+    )
+else:
+    df["PM2.5_Zscore"] = 0
+
+# -------------------------------
+# TASK A3: DATA ANALYSIS
+# -------------------------------
+
+# Daily summary by station
+summary = df.groupby("Station").agg(
+    Minimum=("PM2.5", "min"),
+    Maximum=("PM2.5", "max"),
+    Mean=("PM2.5", "mean"),
+    Valid_Readings=("PM2.5", "count")
+)
+
+print("\nStation Summary:")
+print(summary)
+
+# PM2.5 trend chart
+daily = df.groupby("Date")["PM2.5"].mean()
+
+plt.figure(figsize=(10, 5))
+plt.plot(daily.index, daily.values, marker="o")
+plt.title("PM2.5 Trend")
+plt.xlabel("Date")
+plt.ylabel("PM2.5")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# Station comparison chart
+df.groupby("Station")["PM2.5"].mean().plot(
+    kind="bar", figsize=(8, 5)
+)
+plt.title("Station-wise PM2.5 Comparison")
+plt.ylabel("Average PM2.5")
+plt.tight_layout()
+plt.show()
+
+# Temperature vs PM2.5 scatter plot
+plt.scatter(df["Temperature"], df["PM2.5"])
+plt.title("Temperature vs PM2.5")
+plt.xlabel("Temperature")
+plt.ylabel("PM2.5")
+plt.show()
+
+# -------------------------------
+# TASK A4: DEBUGGING AND PROFILING
+# -------------------------------
+
+start = time.perf_counter()
+
+assert df["PM2.5"].isnull().sum() == 0
+
+logging.info("Data cleaning completed")
+logging.info("Duplicate rows removed")
+
+end = time.perf_counter()
+
+print("\nExecution Time:", end - start, "seconds")
+
+# -------------------------------
+# TASK A5: SENTIMENT ANALYSIS
+# -------------------------------
+
+positive_words = [
+    "good", "clean", "safe", "fresh", "better"
+]
+
+negative_words = [
+    "bad", "poor", "polluted", "dangerous", "dirty"
+]
+
+def sentiment_analysis(sentence):
+    words = sentence.lower().split()
+
+    score = 0
+
+    for i, word in enumerate(words):
+        if word in positive_words:
+            score += 1
+        elif word in negative_words:
+            score -= 1
+
+        # Handle simple negation
+        if i > 0 and words[i - 1] in ["not", "no"]:
+            if word in positive_words:
+                score -= 2
+            elif word in negative_words:
+                score += 2
+
+    if score > 0:
+        return "Positive"
+    elif score < 0:
+        return "Negative"
+    else:
+        return "Neutral"
+
+
+# Extractive summariser
+def summarise(text):
+    sentences = text.split(".")
+
+    important = [
+        sentence.strip()
+        for sentence in sentences
+        if any(word in sentence.lower()
+               for word in positive_words + negative_words)
+    ]
+
+    return ". ".join(important[:3])
+
+
+# Basic rule-based chatbot
+def chatbot(question):
+    q = question.lower()
+
+    if "pm2.5" in q:
+        value = df["PM2.5"].mean()
+        return f"Average PM2.5 reading is {value:.2f}"
+
+    elif "temperature" in q:
+        value = df["Temperature"].mean()
+        return f"Average temperature is {value:.2f}"
+
+    elif "station" in q:
+        return str(df["Station"].unique())
+
+    elif "highest" in q:
+        return str(df.loc[df["PM2.5"].idxmax()])
+
+    else:
+        return "Sorry, I cannot understand your question."
+
+
+print("\nSentiment:", sentiment_analysis(
+    "The air quality is not good"
+))
+
+print("\nSummary:", summarise(
+    "The air is clean. Pollution is dangerous. "
+    "The environment is safe."
+))
+
+print("\nCHATBOT")
+while True:
+    question = input("Ask a question (type exit to stop): ")
+
+    if question.lower() == "exit":
+        print("Thank you!")
+        break
+
+    print(chatbot(question))
+
+# Save cleaned data
+df.to_csv("cleaned_air_quality.csv", index=False)
+
+# Save summary
+summary.to_csv("station_summary.csv")
+
+print("\nAll tasks completed successfully!")
