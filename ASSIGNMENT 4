@@ -1,0 +1,65 @@
+
+from pathlib import Path
+from datetime import datetime
+
+def process_attendance(folder):
+
+    attendance = {}
+    damaged = []
+
+    files = sorted(Path(folder).glob("*.txt"))
+
+    for file in files:
+        with open(file, "r", encoding="utf-8") as f:
+
+            for line_no, line in enumerate(f, start=1):
+                try:
+                    parts = line.strip().split(",")
+
+                    if len(parts) != 3:
+                        raise ValueError("Missing fields")
+
+                    reg_no = parts[0].strip()
+                    date = parts[1].strip()
+                    status = parts[2].strip().upper()
+
+                    if not reg_no:
+                        raise ValueError("Missing register number")
+
+                    datetime.strptime(date, "%Y-%m-%d")
+
+                    if status not in ["P", "A"]:
+                        raise ValueError("Invalid status")
+
+                    if reg_no not in attendance:
+                        attendance[reg_no] = [0, 0]
+
+                    attendance[reg_no][1] += 1
+
+                    if status == "P":
+                        attendance[reg_no][0] += 1
+
+                except ValueError:
+                    damaged.append(
+                        f"{file.name}, Line {line_no}: {line.strip()}"
+                    )
+
+    with open("below_75.txt", "w", encoding="utf-8") as f:
+        for reg_no, counts in attendance.items():
+            percentage = (counts[0] / counts[1]) * 100
+
+            if percentage < 75:
+                f.write(
+                    f"{reg_no} - {percentage:.2f}%\n"
+                )
+
+    with open("damaged_lines.txt", "w", encoding="utf-8") as f:
+        for item in damaged:
+            f.write(item + "\n")
+
+    print("Attendance Processing Completed")
+    print("Below 75% report generated")
+    print("Damaged lines report generated")
+
+
+process_attendance("attendance")
