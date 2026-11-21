@@ -1,0 +1,239 @@
+lLIST AND SLICING DAILY RAINFALL RECORDS
+
+import random
+import time
+
+# Generate 365 days of rainfall data
+readings = [random.randint(0, 50) for _ in range(365)]
+
+# 1. Weekly rainfall totals using slicing
+weekly_totals = []
+
+for i in range(0, 365, 7):
+    weekly_totals.append(sum(readings[i:i+7]))
+
+print("Weekly Rainfall Totals:", weekly_totals)
+
+# 2. Maximum and minimum rainfall
+print("Maximum Rainfall:", max(readings))
+print("Maximum Position:", readings.index(max(readings)))
+
+print("Minimum Rainfall:", min(readings))
+print("Minimum Position:", readings.index(min(readings)))
+
+# 3. Seven-day moving average
+moving_average = []
+
+for i in range(len(readings) - 6):
+    avg = sum(readings[i:i+7]) / 7
+    moving_average.append(avg)
+
+print("7-Day Moving Average:", moving_average)
+
+# 4. Find dry days (0 mm)
+dry_days = []
+
+for i in range(len(readings)):
+    if readings[i] == 0:
+        dry_days.append(i + 1)
+
+print("Dry Days:", dry_days)
+
+# 5. Running sum moving average
+running_average = []
+window_sum = sum(readings[:7])
+
+running_average.append(window_sum / 7)
+
+for i in range(7, len(readings)):
+    window_sum += readings[i] - readings[i-7]
+    running_average.append(window_sum / 7)
+
+print("Running Sum Average:", running_average)
+
+# 6. Experimental investigation
+for n in [365, 36500, 365000]:
+
+    data = [random.randint(0, 50) for _ in range(n)]
+
+    # Naive method
+    start = time.time()
+
+    naive = [
+        sum(data[i:i+7]) / 7
+        for i in range(n-6)
+    ]
+
+    naive_time = time.time() - start
+
+    # Running sum method
+    start = time.time()
+
+    total = sum(data[:7])
+    result = [total / 7]
+
+    for i in range(7, n):
+        total += data[i] - data[i-7]
+        result.append(total / 7)
+
+    running_time = time.time() - start
+
+    print("\nReadings:", n)
+    print("Naive Time:", naive_time)
+    print("Running Sum Time:", running_time)
+
+# 7. Testing empty and short lists
+def moving_average_test(data):
+    if len(data) < 7:
+        return []
+
+    return [
+        sum(data[i:i+7]) / 7
+        for i in range(len(data)-6)
+    ]
+
+print("Empty List:", moving_average_test([]))
+print("Short List:", moving_average_test([10, 20, 30]))
+
+
+QUESTION NO.2
+TUPLES,MUTABILITY AND COPYING
+
+
+import copy
+import sys
+import time
+
+# 1. Represent bus stops using tuples
+stop1 = (13.0827, 80.2707)
+stop2 = (12.9716, 77.5946)
+stop3 = (17.3850, 78.4867)
+
+# Tuples as dictionary keys
+bus_stops = {
+    stop1: 100,
+    stop2: 200,
+    stop3: 150
+}
+
+print("Bus Stop Details:")
+print(bus_stops)
+
+# 2. Create a 3x3 grid correctly
+grid = [[0 for col in range(3)] for row in range(3)]
+
+print("\nCorrect Grid:")
+print(grid)
+
+# 3. Aliasing problem
+grid1 = [[0] * 3] * 3
+
+grid1[0][0] = 10
+
+print("\nAliasing Problem:")
+print(grid1)
+
+# Correct method
+grid2 = [[0 for col in range(3)] for row in range(3)]
+
+grid2[0][0] = 10
+
+print("\nCorrected Grid:")
+print(grid2)
+
+# 4. Shallow copy
+original = [[1, 2], [3, 4]]
+
+shallow = copy.copy(original)
+
+shallow[0][0] = 100
+
+print("\nOriginal:", original)
+print("Shallow Copy:", shallow)
+
+# 5. Deep copy
+original = [[1, 2], [3, 4]]
+
+deep = copy.deepcopy(original)
+
+deep[0][0] = 500
+
+print("\nOriginal:", original)
+print("Deep Copy:", deep)
+
+# 6. List slicing copy
+list1 = [10, 20, 30, 40]
+
+list2 = list1[:]
+
+list2[0] = 100
+
+print("\nOriginal List:", list1)
+print("Copied List:", list2)
+
+# 7. Tuple unpacking
+stop = (13.0827, 80.2707)
+
+latitude, longitude = stop
+
+print("\nLatitude:", latitude)
+print("Longitude:", longitude)
+
+# 8. Function changing list
+def change_list(values):
+    values[0] = 999
+
+numbers = [10, 20, 30]
+
+change_list(numbers)
+
+print("\nChanged List:", numbers)
+
+# 9. Bug and correction using id()
+a = [[1, 2], [3, 4]]
+b = a
+
+print("\nID of a:", id(a))
+print("ID of b:", id(b))
+
+b[0][0] = 100
+
+print("Original after aliasing:", a)
+
+# Correction
+b = copy.deepcopy(a)
+b[0][0] = 500
+
+print("Original after deep copy:", a)
+print("Deep copied list:", b)
+
+# 10. Compare memory usage
+my_list = list(range(1000000))
+my_tuple = tuple(range(1000000))
+
+print("\nMemory Usage:")
+print("List Memory:", sys.getsizeof(my_list))
+print("Tuple Memory:", sys.getsizeof(my_tuple))
+
+# 11. Time tuple and list operations
+start = time.time()
+my_list = list(range(1000000))
+list_time = time.time() - start
+
+start = time.time()
+my_tuple = tuple(range(1000000))
+tuple_time = time.time() - start
+
+print("\nCreation Time:")
+print("List:", list_time)
+print("Tuple:", tuple_time)
+
+# 12. Test modifying list inside tuple
+data = ([10, 20, 30], 100)
+
+data[0][0] = 999
+
+print("\nTuple with Mutable List:", data)
+
+
+
